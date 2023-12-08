@@ -4,3 +4,8 @@ reduced_data/
 data/
 small_data/
 model/
+data_20/
+data_20_a/
+data_50_a/
+logs/
+.quickdrawcache/

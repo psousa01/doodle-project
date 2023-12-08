@@ -8,7 +8,7 @@ print(Fore.BLUE + "\nLoading TensorFlow..." + Style.RESET_ALL)
 start = time.perf_counter()
 
 from keras import Model, layers, optimizers
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping, CSVLogger
 from keras.applications.vgg16 import VGG16, preprocess_input
 
 end = time.perf_counter()
@@ -27,28 +27,29 @@ def initialize_model():
 
     #Keras Functional API
     inputs = layers.Input(shape = (64,64,3))
-    
+
     x = preprocess_input(inputs) # Use same preprocessing as VGG16 to match the model
     # x = layers.Rescaling(scale=1./127.5, offset=-1)(inputs)
+
+    # VGG16 base model
     x = base_model(x)
-    
+
     x = layers.Flatten()(x)
 
     # Our own dense layers from now on
-    x = layers.Dense(600, activation = 'relu')(x)
-    x = layers.BatchNormalization()(x)
+    x = layers.Dense(512, activation='relu')(x)
     x = layers.Dropout(0.3)(x)
-    x = layers.Dense(500, activation = 'relu')(x)
-    x = layers.BatchNormalization()(x)
+    x = layers.Dense(256, activation='relu')(x)
     x = layers.Dropout(0.3)(x)
-    x = layers.Dense(400, activation = 'relu')(x)
-    x = layers.BatchNormalization()(x)
+    x = layers.Dense(128, activation='relu')(x)
     x = layers.Dropout(0.3)(x)
-    pred = layers.Dense(8, activation = 'softmax')(x) # 5 IS FOR REDUCED DATASET, CHANGE TO 345 WHEN USING FULL
-    
-    
+    x = layers.Dense(64, activation = 'relu')(x)
+    x = layers.Dropout(0.3)(x)
+    pred = layers.Dense(50, activation = 'softmax')(x) # 5 IS FOR REDUCED DATASET, CHANGE TO 345 WHEN USING FULL
+
+
     model = Model(inputs = inputs, outputs = pred)
-    
+
 
     print("✅ Model initialized")
 
@@ -77,17 +78,21 @@ def train_model(
     Fit the model and return a tuple (fitted_model, history)
     """
     es = EarlyStopping(
-        monitor="val_loss",
+        monitor="val_accuracy",
         patience=patience,
         restore_best_weights=True,
         verbose=1
     )
 
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+
+    csv_logger = CSVLogger(f'logs/{timestamp}.log', separator=',', append=False)
+
     history = model.fit(
         train_ds,
         validation_data=val_ds,
         epochs=epochs,
-        callbacks=[es],
+        callbacks=[es, csv_logger],
         verbose=1
     )
 
