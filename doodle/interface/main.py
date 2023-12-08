@@ -11,9 +11,9 @@ from doodle.params import *
 
 
 def train(
-        learning_rate=0.0005,
-        epochs = 100,
-        patience = 5
+        learning_rate=0.001,
+        epochs = 600,
+        patience = 10
     ) -> float:
 
     """
@@ -28,11 +28,11 @@ def train(
     print(Fore.BLUE + "\nLoading data..." + Style.RESET_ALL)
 
     train_ds, val_ds = get_data(DATA_SIZE)
-    
+
     # X_train, y_train = preprocess(train_ds)
     # X_val, y_val = preprocess(val_ds)
     # train_ds, val_ds = preprocess(train_ds, val_ds)
-    
+
     # Train model using `model.py`
     model = initialize_model()
     model = compile_model(model=model, learning_rate=learning_rate)
